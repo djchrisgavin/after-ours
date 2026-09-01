@@ -75,6 +75,34 @@
     font-size: 11px; color: var(--paper); background: none; border: 1px solid var(--paper);
     padding: 6px 12px; cursor: pointer; margin-bottom: 12px;
   }
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,8,5,0.75);
+    align-items: center; justify-content: center;
+    z-index: 50;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--paper);
+    color: var(--ink);
+    max-width: 380px;
+    width: 90%;
+    padding: 24px;
+    border: 2px solid var(--accent);
+  }
+  .modal-box .modal-eyebrow { font-size: 11px; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 6px; text-transform: uppercase; }
+  .modal-box h3 { font-size: 20px; margin-bottom: 14px; }
+  .modal-box .modal-defi { font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+  .modal-box button {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 10px 18px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -97,102 +125,118 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-eyebrow" id="modalEyebrow">Défi</div>
+    <h3 id="modalTitle"></h3>
+    <div class="modal-defi" id="modalDefi"></div>
+    <button onclick="closeModal()">C'est noté →</button>
+  </div>
+</div>
+
 <script>
-  // Coordonnées en pourcentage (x, y) de l'image, estimées visuellement.
+  // Coordonnées en pourcentage (x, y), mesurées précisément sur l'image (1448x1086px)
   const nodes = {
-    n1:  { x: 7.9,  y: 34.7, label: '1 · Entrée' },
-    n2:  { x: 23.5, y: 25.0, label: '2 · Sécurité' },
-    n3:  { x: 53.8, y: 29.2, label: '3 · Dancefloor' },
-    n4:  { x: 53.8, y: 22.4, label: '4 · Main Stage' },
-    n5:  { x: 53.8, y: 17.1, label: '5 · Dj Booth' },
-    n6:  { x: 53.8, y: 5.6,  label: '6 · Backstage' },
-    n7:  { x: 96.0, y: 25.5, label: '7 · Parking' },
-    n8:  { x: 16.3, y: 57.6, label: '8 · Podium 1' },
-    n9:  { x: 35.9, y: 51.3, label: '9 · Podium 2' },
-    n10: { x: 31.6, y: 70.9, label: '10 · Podium 3' },
-    n11: { x: 53.8, y: 41.3, label: '11 · Bar' },
-    n12: { x: 53.8, y: 61.4, label: '12 · Lac' },
-    n13: { x: 74.9, y: 65.3, label: '13 · Coin Chill' },
-    n14: { x: 93.0, y: 38.1, label: '14 · Médical' },
-    n15: { x: 94.8, y: 47.3, label: '15 · Vêtements' },
-    n16: { x: 92.0, y: 57.2, label: '16 · Piercings' },
-    n17: { x: 91.4, y: 73.5, label: '17 · Toilettes' },
-    n18: { x: 88.7, y: 66.2, label: '18 · Douches' },
-    n19: { x: 39.2, y: 62.0, label: '19 · Xdome' },
-    A:   { x: 38.0, y: 28.4, label: 'A' },
-    B:   { x: 38.0, y: 35.7, label: 'B' },
-    C:   { x: 45.0, y: 25.2, label: 'C' },
-    D:   { x: 71.7, y: 25.2, label: 'D' },
-    F:   { x: 70.7, y: 33.4, label: 'F' },
-    G:   { x: 79.3, y: 22.6, label: 'G' },
-    H:   { x: 78.5, y: 25.2, label: 'H' },
-    I:   { x: 78.5, y: 34.7, label: 'I' },
-    J:   { x: 78.5, y: 40.8, label: 'J' },
-    K:   { x: 43.1, y: 42.5, label: 'K' },
-    L:   { x: 23.5, y: 42.0, label: 'L' },
-    M:   { x: 23.5, y: 36.0, label: 'M' },
-    N:   { x: 70.7, y: 36.4, label: 'N' },
-    P:   { x: 68.7, y: 43.3, label: 'P' },
-    Q:   { x: 68.7, y: 46.5, label: 'Q' },
-    R:   { x: 68.7, y: 52.8, label: 'R' },
-    S:   { x: 85.4, y: 56.9, label: 'S' },
-    V:   { x: 67.6, y: 69.6, label: 'V' },
-    W:   { x: 51.9, y: 48.5, label: 'W' },
-    X:   { x: 82.2, y: 73.8, label: 'X' },
-    Y:   { x: 44.8, y: 68.8, label: 'Y' },
-    AB:  { x: 47.1, y: 81.2, label: 'AB' },
-    AD:  { x: 27.2, y: 48.6, label: 'AD' },
-    AE:  { x: 26.4, y: 60.7, label: 'AE' },
-    AF:  { x: 25.1, y: 54.3, label: 'AF' },
-    AN:  { x: 83.4, y: 81.2, label: 'AN' }
+    n1:  { x: 7.5,  y: 36.0, label: '1 · Entrée' },
+    n2:  { x: 22.8, y: 28.1, label: '2 · Sécurité' },
+    n3:  { x: 50.6, y: 29.5, label: '3 · Dancefloor' },
+    n4:  { x: 53.9, y: 22.4, label: '4 · Main Stage' },
+    n5:  { x: 53.9, y: 18.0, label: '5 · Dj Booth' },
+    n6:  { x: 53.9, y: 6.3,  label: '6 · Backstage' },
+    n7:  { x: 94.5, y: 25.6, label: '7 · Parking' },
+    n8:  { x: 16.0, y: 59.1, label: '8 · Podium 1' },
+    n9:  { x: 35.6, y: 52.6, label: '9 · Podium 2' },
+    n10: { x: 30.7, y: 70.0, label: '10 · Podium 3' },
+    n11: { x: 52.6, y: 41.2, label: '11 · Bar' },
+    n12: { x: 54.6, y: 61.0, label: '12 · Lac' },
+    n13: { x: 74.4, y: 65.5, label: '13 · Coin Chill' },
+    n14: { x: 93.2, y: 37.9, label: '14 · Médical' },
+    n15: { x: 94.1, y: 47.6, label: '15 · Vêtements' },
+    n16: { x: 95.3, y: 58.9, label: '16 · Piercings' },
+    n17: { x: 89.7, y: 73.6, label: '17 · Toilettes' },
+    n18: { x: 88.3, y: 66.2, label: '18 · Douches' },
+    n19: { x: 38.7, y: 62.2, label: '19 · Xdome' },
+    A:   { x: 36.1, y: 27.5, label: 'A' },
+    B:   { x: 31.9, y: 33.3, label: 'B' },
+    C:   { x: 42.5, y: 25.6, label: 'C' },
+    D:   { x: 63.7, y: 25.2, label: 'D' },
+    F:   { x: 70.4, y: 28.1, label: 'F' },
+    G1:  { x: 73.3, y: 18.9, label: 'G (parking)' },
+    G2:  { x: 66.5, y: 61.0, label: 'G (coin chill)' },
+    H:   { x: 78.5, y: 24.9, label: 'H' },
+    I:   { x: 80.1, y: 31.0, label: 'I' },
+    J:   { x: 78.2, y: 39.8, label: 'J' },
+    K:   { x: 40.1, y: 47.6, label: 'K' },
+    L:   { x: 38.0, y: 39.6, label: 'L' },
+    M:   { x: 22.4, y: 35.6, label: 'M' },
+    N:   { x: 70.4, y: 35.5, label: 'N' },
+    P:   { x: 70.4, y: 41.0, label: 'P' },
+    Q:   { x: 70.4, y: 46.7, label: 'Q' },
+    R:   { x: 70.4, y: 54.5, label: 'R' },
+    S:   { x: 85.1, y: 56.8, label: 'S' },
+    V1:  { x: 47.3, y: 63.7, label: 'V (xdome)' },
+    V2:  { x: 68.9, y: 65.9, label: 'V (coin chill)' },
+    W1:  { x: 43.9, y: 53.6, label: 'W (podium 2)' },
+    W2:  { x: 68.0, y: 72.1, label: 'W (toilettes)' },
+    X:   { x: 73.8, y: 80.0, label: 'X' },
+    Y:   { x: 44.2, y: 69.9, label: 'Y' },
+    AB:  { x: 47.1, y: 77.7, label: 'AB' },
+    AD:  { x: 27.6, y: 49.0, label: 'AD' },
+    AE:  { x: 27.6, y: 60.8, label: 'AE' },
+    AF:  { x: 22.8, y: 55.0, label: 'AF' },
+    AN:  { x: 82.0, y: 84.6, label: 'AN' }
   };
 
-  // Adjacence estimée visuellement (best-effort, à corriger ensemble)
+  // Adjacence reconstruite à partir des mesures précises (chemins visibles + raccourcis officiels)
   const adjacency = {
     n1: ['n2'],
-    n2: ['n1', 'A', 'M'],
-    A: ['n2', 'C', 'B'],
-    B: ['A', 'K'],
+    n2: ['n1', 'A', 'M', 'n9', 'n10'],
+    A: ['n2', 'C'],
     C: ['A', 'n3'],
     n3: ['C', 'n4', 'n11'],
     n4: ['n3', 'n5', 'D'],
     n5: ['n4', 'n6', 'n13'],
     n6: ['n5', 'n7', 'n14', 'n17'],
     D: ['n4', 'F'],
-    F: ['D', 'N', 'G'],
-    G: ['F', 'H'],
-    H: ['G', 'I', 'n7'],
+    F: ['D', 'N', 'G1'],
+    G1: ['F', 'H'],
+    H: ['G1', 'I', 'n7'],
     I: ['H', 'J'],
-    J: ['I', 'N'],
+    J: ['I', 'N', 'n14'],
     N: ['F', 'J', 'P'],
     P: ['N', 'Q'],
     Q: ['P', 'R'],
-    R: ['Q', 'S', 'V'],
-    S: ['R', 'n16', 'n15'],
-    n7: ['H', 'n6'],
-    n14: ['n6', 'n15'],
+    R: ['Q', 'S', 'G2'],
+    S: ['R', 'n15', 'n16'],
+    n7: ['H', 'n6', 'n14'],
+    n14: ['n7', 'n6', 'J', 'n15'],
     n15: ['n14', 'S'],
-    n16: ['S', 'n18'],
-    n18: ['n16', 'n17'],
-    n17: ['n18', 'n6'],
-    n13: ['n5', 'V'],
-    V: ['R', 'n13', 'n12'],
-    n12: ['V', 'Y', 'W'],
-    W: ['K', 'n12', 'n11'],
-    n11: ['n3', 'W'],
-    K: ['B', 'W', 'L'],
-    L: ['K', 'M', 'AD'],
-    M: ['n2', 'L'],
-    AD: ['L', 'AF'],
-    AF: ['AD', 'AE', 'n8'],
+    n16: ['S'],
+    n13: ['n5', 'V2', 'n18'],
+    V2: ['n13', 'G2', 'W2'],
+    G2: ['R', 'V2'],
+    W2: ['V2', 'X', 'AN'],
+    X: ['W2', 'AN', 'n17'],
+    AN: ['W2', 'X'],
+    n18: ['n13', 'n17'],
+    n17: ['n18', 'n6', 'X'],
+    n12: ['V1', 'Y'],
+    V1: ['n12', 'W1'],
+    W1: ['V1', 'K'],
+    K: ['W1', 'L', 'B', 'n9', 'n11'],
+    B: ['K'],
+    L: ['K', 'M'],
+    M: ['n2', 'L', 'AD'],
+    AD: ['M', 'AF'],
+    AF: ['AD', 'AE'],
     AE: ['AF', 'n19', 'n8'],
-    n8: ['AF', 'AE'],
-    n19: ['AE', 'Y'],
-    Y: ['n12', 'n19', 'n10', 'AB'],
-    n10: ['Y'],
-    AB: ['Y', 'AN'],
-    AN: ['AB', 'X'],
-    X: ['AN', 'V']
+    n8: ['AE'],
+    n19: ['AE', 'AB'],
+    Y: ['n12', 'n10', 'AB'],
+    n10: ['Y', 'n2'],
+    AB: ['Y', 'n19'],
+    n9: ['K', 'n2'],
+    n11: ['n3', 'K']
   };
 
   const tokenColors = { sam: '#B3502C', lina: '#2A1F14', yanis: '#C99A3D' };
@@ -241,6 +285,125 @@
     });
   }
 
+  // Thèmes de défis par lieu (personnalité ludique) — piochés dans les banques mini-jeux/connaissances
+  const themePools = {
+    rythme: [
+      "Mini-jeu : Rhythm Machine — ajoute un son/geste à une boucle collective, tiens 20 s.",
+      "Mini-jeu : Le rythme jumeau — reproduis une séquence de frappes qui s'allonge.",
+      "Mini-jeu : Mime turbo — fais deviner 5 mots uniquement en mimant, 4/5 en 60 s.",
+      "Mini-jeu : Miroir — improvise des mouvements, l'autre les reproduit 30 s sans rupture."
+    ],
+    performance: [
+      "Mini-jeu : Catégorie infernale — cite un élément d'une catégorie, 3 s max, aucun doublon.",
+      "Mini-jeu : Histoire en un mot — construisez une phrase cohérente, un mot chacun.",
+      "Mini-jeu : Alphabet express — artiste + ville + objet + aliment sur une lettre, 4 réponses en 20 s.",
+      "DJ résident : fais écouter un morceau en tête-à-tête à quelqu'un."
+    ],
+    musique: [
+      "Écoute un extrait sonore : devine si le tempo est lent, moyen ou rapide.",
+      "Mini-jeu : Le beat parfait — tape un tempo de mémoire à ±5 BPM.",
+      "Mini-jeu : La mélodie interdite — fredonne une chanson sans les paroles, à faire deviner."
+    ],
+    secret: [
+      "Mini-jeu : Télépathie — réponds à une question en même temps qu'un autre joueur, sans se concerter.",
+      "Mini-jeu : Code secret — devine une séquence de 4 couleurs en 6 essais maximum.",
+      "Mini-jeu : Communication muette — classez 8 cartes dans l'ordre demandé, sans parler.",
+      "Mini-jeu : Huit questions — devine en posant uniquement des questions oui/non.",
+      "Mini-jeu : Chef secret — un meneur dirige discrètement le groupe, un enquêteur doit le trouver."
+    ],
+    logique: [
+      "Mini-jeu : Mémoire Playa — observe 12 objets 15 s, retrouves-en 8 de mémoire.",
+      "Mini-jeu : Séquence mémoire — reproduis une séquence de 7 symboles ou couleurs.",
+      "Mini-jeu : Code secret — devine une séquence de 4 couleurs en 6 essais maximum."
+    ],
+    adresse: [
+      "Mini-jeu : Tour fragile — construis une tour de 8 éléments d'une seule main, elle doit tenir 5 s.",
+      "Mini-jeu : Équilibre — transporte une balle sur une surface instable sans chute.",
+      "Mini-jeu : Architectes — construisez une tour ensemble, chacun une seule main.",
+      "Mini-jeu : Le poteau — tiens en équilibre sur un pied, un témoin chronomètre."
+    ],
+    reflexion: [
+      "Mini-jeu : L'estimation — devine la quantité, longueur ou poids d'un objet, à 15% près.",
+      "Mini-jeu : La majorité — prédis la réponse majoritaire du groupe sur 2 questions sur 3.",
+      "Mini-jeu : Détail du festival — retrouve où se trouve un détail zoomé du site."
+    ],
+    social: [
+      "Mini-jeu : Un mot pour trois — fais deviner trois mots avec un seul indice commun.",
+      "Mini-jeu : La file silencieuse — rangez-vous par mois de naissance, sans parler.",
+      "Mini-jeu : Le territoire — duel de culture générale entre deux équipes.",
+      "Sers un verre à quelqu'un, ou donne les ingrédients d'un cocktail."
+    ],
+    absurde: [
+      "Mini-jeu : Mission absurde — fais tenir 5 objets les uns sur les autres sans les tenir.",
+      "Mini-jeu : Le dessin impossible — dessine de la main non dominante, à faire deviner en 10 s.",
+      "Mini-jeu : Catégorie éclair — 10 réponses différentes en 30 secondes.",
+      "Mini-jeu : le compliment impossible — complimente sincèrement un objet anodin de la pièce."
+    ]
+  };
+
+  // Mécaniques spéciales fixes (remplacent le tirage thématique pour ces lieux précis)
+  const specialDefis = {
+    n2: "Passage obligé : réussis ton contrôle, ou repars fouillé et dépouillé.",
+    n6: "Défi de sortie de zone — dépend de qui garde le passage ce soir.",
+    n7: "Tu y es. Selon ton argent : taxi, ou tu rentres à pied.",
+    n9: "Le poteau : tiens en équilibre sur un pied, un témoin chronomètre.",
+    n10: "Danse en duo avec un partenaire désigné par le jeu.",
+    n12: "Une pause ici fait redescendre ton niveau de risque.",
+    n13: "Une pause ici fait aussi redescendre ton niveau de risque.",
+    n19: "Accès réservé... à moins que quelqu'un t'y attende."
+  };
+
+  // Thème associé à chaque lieu numéroté (personnalité ludique)
+  const locationThemes = {
+    n1: 'absurde',
+    n3: 'rythme',
+    n4: 'performance',
+    n5: 'musique',
+    n8: 'adresse',
+    n11: 'social',
+    n14: 'absurde',
+    n15: 'absurde',
+    n16: 'absurde',
+    n17: 'absurde',
+    n18: 'absurde'
+  };
+
+  const genericDefis = [
+    "Connaissances : on dit un ou une track ?",
+    "Connaissances : que veut dire \"b2b\" entre deux DJ ?",
+    "Mini-jeu Solo : Chronomètre humain — annonce quand 30 secondes se sont écoulées, sans montre.",
+    "Mini-jeu Solo : Catégorie éclair — 10 réponses différentes en 30 secondes.",
+    "Mini-jeu Solo : L'estimation — devine la quantité, la longueur ou le poids d'un objet, à moins de 15% près."
+  ];
+
+  function pickFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function showDefiModal(nodeKey) {
+    const label = nodes[nodeKey].label;
+    const isNamed = /^n\d+/.test(nodeKey);
+    let defi, eyebrow;
+    if (isNamed && specialDefis[nodeKey]) {
+      defi = specialDefis[nodeKey];
+      eyebrow = 'Lieu — mécanique spéciale';
+    } else if (isNamed && locationThemes[nodeKey]) {
+      defi = pickFrom(themePools[locationThemes[nodeKey]]);
+      eyebrow = 'Lieu — ' + locationThemes[nodeKey];
+    } else if (isNamed) {
+      defi = pickFrom(genericDefis);
+      eyebrow = 'Lieu';
+    } else {
+      defi = pickFrom(genericDefis);
+      eyebrow = 'Point de passage';
+    }
+    document.getElementById('modalEyebrow').textContent = eyebrow;
+    document.getElementById('modalTitle').textContent = label;
+    document.getElementById('modalDefi').textContent = defi;
+    document.getElementById('modalOverlay').classList.add('active');
+  }
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+
   function renderMoves() {
     const row = document.getElementById('moveRow');
     row.innerHTML = '';
@@ -253,6 +416,7 @@
         renderTokens();
         renderTabs();
         renderMoves();
+        setTimeout(() => showDefiModal(dest), 850);
       };
       row.appendChild(b);
     });
