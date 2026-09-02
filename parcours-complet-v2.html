@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFTER OURS — Parcours complet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A12;
+    --surface: #16151F;
+    --surface-2: #1E1D2A;
+    --ink: #F2F1F7;
+    --ink-soft: #8B899E;
+    --neon: #FF2DAD;
+    --neon-soft: rgba(255, 45, 173, 0.35);
+    --cyan: #00E5FF;
+    --danger: #FF4D4D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  body::before {
+    content: ''; position: fixed; top: -20%; left: -10%; width: 60%; height: 60%;
+    background: radial-gradient(circle, var(--neon-soft) 0%, transparent 70%);
+    filter: blur(40px); z-index: 0;
+  }
+  body::after {
+    content: ''; position: fixed; bottom: -20%; right: -10%; width: 60%; height: 60%;
+    background: radial-gradient(circle, rgba(0,229,255,0.2) 0%, transparent 70%);
+    filter: blur(40px); z-index: 0;
+  }
+  .card {
+    position: relative; z-index: 1;
+    max-width: 380px; width: 100%;
+    border-radius: 24px; padding: 32px 24px;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .step { display: none; }
+  .step.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .eyebrow { text-align: center; font-size: 11px; color: var(--ink-soft); letter-spacing: 0.08em; margin-bottom: 8px; text-transform: uppercase; }
+  h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; text-align: center; margin-bottom: 8px; line-height: 1.35; }
+  .sub { text-align: center; font-size: 12.5px; color: var(--ink-soft); margin-bottom: 22px; line-height: 1.5; }
+  .privacy-note { text-align: center; font-size: 11px; color: var(--cyan); margin-bottom: 20px; }
+
+  label { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; font-weight: 500; }
+  input[type=text] {
+    width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 26px;
+    letter-spacing: 0.35em; text-align: center; padding: 16px; border-radius: 14px;
+    border: 1.5px solid rgba(255,255,255,0.1); background: var(--surface-2); color: var(--ink);
+    margin-bottom: 18px; text-transform: uppercase;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 0 4px var(--neon-soft); }
+  .pseudo-input {
+    font-family: 'Inter', sans-serif !important; font-weight: 500; font-size: 16px !important;
+    letter-spacing: normal !important; text-align: left !important; text-transform: none !important;
+  }
+  .track-input { font-size: 16px !important; letter-spacing: normal !important; text-align: left !important; text-transform: none !important; font-family: 'Inter', sans-serif !important; }
+
+  button.primary {
+    width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px;
+    padding: 16px; border-radius: 14px; background: linear-gradient(90deg, var(--neon), #B14EFF);
+    color: white; border: none; cursor: pointer; box-shadow: 0 8px 24px var(--neon-soft);
+    transition: transform 0.15s ease; margin-top: 4px;
+  }
+  button.primary:hover { transform: translateY(-1px); }
+  button.primary:disabled { background: var(--surface-2); box-shadow: none; color: var(--ink-soft); cursor: not-allowed; }
+
+  .error { color: var(--neon); font-size: 12px; margin-top: -12px; margin-bottom: 14px; display: none; }
+
+  .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+  .avatar-option {
+    aspect-ratio: 1; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer;
+    background: var(--surface-2); transition: all 0.15s ease;
+  }
+  .avatar-option.selected { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-soft); background: rgba(255,45,173,0.08); }
+  .avatar-modes { display: flex; gap: 8px; margin-bottom: 18px; }
+  .avatar-modes button {
+    flex: 1; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 11px; padding: 10px;
+    border-radius: 10px; background: var(--surface-2); border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer; color: var(--ink-soft);
+  }
+  .avatar-modes button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .lobby-list { margin-top: 22px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 18px; }
+  .lobby-list .count { font-size: 12px; color: var(--ink-soft); margin-bottom: 12px; }
+  .lobby-player { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 14px; font-weight: 500; }
+  .lobby-player .dot {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2);
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: 0 0 0 2px rgba(0,229,255,0.4);
+  }
+  #myAvatarDisplay { text-align:center; font-size:44px; margin: 4px 0 8px; filter: drop-shadow(0 0 12px var(--neon-soft)); }
+  #myNameDisplay { text-align:center; font-size:16px; font-weight: 600; margin-bottom: 6px; }
+
+  .option-btn {
+    width: 100%; text-align: left; padding: 15px 18px; border-radius: 14px; background: var(--surface-2);
+    border: 1.5px solid rgba(255,255,255,0.08); color: var(--ink); font-family: 'Inter', sans-serif;
+    font-size: 14.5px; font-weight: 500; margin-bottom: 10px; cursor: pointer;
+  }
+  .option-btn:hover { border-color: var(--neon); }
+
+  .progress-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
+  .progress-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+  .progress-dots .dot.done { background: var(--neon); }
+  .progress-dots.cyan .dot.done { background: var(--cyan); }
+
+  .role-card {
+    padding: 18px; border-radius: 16px; background: var(--surface-2); border: 1.5px solid rgba(255,255,255,0.08);
+    margin-bottom: 12px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .role-card:hover { border-color: var(--neon); }
+  .role-card.selected { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-soft); background: rgba(255,45,173,0.06); }
+  .role-card .role-icon { font-size: 26px; margin-bottom: 8px; }
+  .role-card .role-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+  .role-card .role-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+  .role-card .role-stars { font-size: 13px; color: var(--neon); margin-top: 6px; letter-spacing: 2px; }
+  .role-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .role-card.locked:hover { border-color: rgba(255,255,255,0.08); }
+  .role-card.locked .role-stars { color: var(--ink-soft); }
+  .role-card .lock-note { font-size: 10.5px; color: var(--ink-soft); margin-top: 6px; letter-spacing: 0.02em; line-height: 1.4; }
+
+  .confirm-icon { font-size: 48px; text-align: center; margin-bottom: 14px; filter: drop-shadow(0 0 16px var(--neon-soft)); }
+  .confirm-role { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; text-align: center; margin-bottom: 6px; }
+
+  .person-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 22px; }
+  .person-avatar {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--surface-2);
+    display: flex; align-items: center; justify-content: center; font-size: 30px;
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.35); margin-bottom: 10px;
+  }
+  .person-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; }
+  .sub-question { margin-bottom: 18px; }
+  .sub-question .q-label { font-size: 13.5px; font-weight: 500; margin-bottom: 10px; }
+  .yn-row { display: flex; gap: 10px; }
+  .yn-btn {
+    flex: 1; padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1.5px solid rgba(255,255,255,0.08);
+    color: var(--ink); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px; cursor: pointer;
+  }
+  .yn-btn.selected { border-color: var(--neon); background: rgba(255,45,173,0.1); box-shadow: 0 0 0 3px var(--neon-soft); }
+
+  .choice-row { display: flex; gap: 10px; }
+  .choice-btn {
+    flex: 1; padding: 20px 12px; border-radius: 16px; background: var(--surface-2);
+    border: 1.5px solid rgba(255,255,255,0.08); color: var(--ink); cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; transition: all 0.15s ease;
+  }
+  .choice-btn .emoji { display: block; font-size: 28px; margin-bottom: 8px; }
+  .choice-btn:hover { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-soft); }
+
+  .countdown {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 64px; color: var(--neon);
+    text-shadow: 0 0 30px var(--neon-soft); margin: 10px 0 6px; text-align: center;
+  }
+  .countdown-label { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; text-align: center; }
+
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--surface-2); border-top-color: var(--neon);
+    border-radius: 50%; margin: 10px auto 20px; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .track-result {
+    background: var(--surface-2); border-radius: 14px; padding: 16px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px; text-align: left;
+  }
+  .track-thumb {
+    width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, var(--neon), var(--cyan));
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .track-title { font-size: 14px; font-weight: 600; }
+  .track-sub { font-size: 11px; color: var(--ink-soft); }
+  .dance-icon { font-size: 56px; margin-bottom: 10px; text-align: center; filter: drop-shadow(0 0 20px var(--neon-soft)); }
+  .vote-row { display: flex; gap: 12px; justify-content: center; margin-top: 6px; }
+  .vote-btn {
+    width: 64px; height: 64px; border-radius: 50%; font-size: 26px; background: var(--surface-2);
+    border: 1.5px solid rgba(255,255,255,0.08); cursor: pointer; transition: all 0.15s ease;
+  }
+  .vote-btn:hover { transform: scale(1.08); }
+  .locked-note { font-size: 11px; color: var(--ink-soft); margin-top: 14px; text-align: center; }
+  .done-icon { font-size: 44px; text-align: center; margin-bottom: 12px; filter: drop-shadow(0 0 16px rgba(0,229,255,0.4)); }
+
+  .step-counter { text-align: center; font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 18px; }
+
+  .map-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .map-row .lieu-label { flex: 0 0 110px; font-size: 12.5px; font-weight: 600; }
+  .map-row input[type=text] {
+    flex: 1; font-family: 'Inter', sans-serif !important; font-weight: 500; font-size: 13px !important;
+    letter-spacing: normal !important; text-align: left !important; text-transform: none !important;
+    padding: 10px 12px; margin-bottom: 0;
+  }
+  .skip-link {
+    display: block; text-align: center; margin-top: 14px; font-size: 12px; color: var(--ink-soft);
+    background: none; border: none; cursor: pointer; text-decoration: underline;
+  }
+
+  .map-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1448 / 1086;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: #1a1410;
+  }
+  .map-frame img { position: absolute; display: block; max-width: none; }
+  .map-frame.small { aspect-ratio: 16 / 9; }
+  .my-pin {
+    position: absolute;
+    width: 18px; height: 18px;
+    background: var(--neon);
+    border: 3px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 6px var(--neon-soft), 0 0 16px var(--neon);
+    animation: pinPulse 1.6s infinite;
+  }
+  @keyframes pinPulse {
+    0%, 100% { box-shadow: 0 0 0 6px var(--neon-soft), 0 0 16px var(--neon); }
+    50% { box-shadow: 0 0 0 10px transparent, 0 0 16px var(--neon); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- 0. ORGANISATEUR / SETUP -->
+  <div id="s-setup" class="step active">
+    <div class="eyebrow">Avant de lancer</div>
+    <h1>Tu crées la session</h1>
+    <div class="sub">Associe quelques pièces de chez toi aux lieux du jeu. Tu pourras jouer normalement une fois la partie lancée — cette étape ne t'empêche pas de participer.</div>
+    <div class="map-row"><div class="lieu-label">Dancefloor</div><input type="text" id="mapDancefloor" placeholder="ex : salon"></div>
+    <div class="map-row"><div class="lieu-label">Main Stage</div><input type="text" id="mapMainstage" placeholder="ex : coin TV"></div>
+    <div class="map-row"><div class="lieu-label">Backstage</div><input type="text" id="mapBackstage" placeholder="ex : cuisine"></div>
+    <div class="map-row"><div class="lieu-label">Lac</div><input type="text" id="mapLac" placeholder="ex : salle de bain"></div>
+    <div class="map-row"><div class="lieu-label">Bar</div><input type="text" id="mapBar" placeholder="ex : cuisine"></div>
+    <button class="primary" onclick="finishSetup()">Lancer la session →</button>
+    <button class="skip-link" onclick="show('s-code')">Je ne suis pas l'organisateur, je rejoins juste →</button>
+    <div class="step-counter">0 / 15 — organisateur uniquement</div>
+  </div>
+
+  <!-- 1. CODE -->
+  <div id="s-code" class="step">
+    <div class="eyebrow">After Ours</div>
+    <h1>Rejoindre la soirée</h1>
+    <label style="text-align:center; margin-top:14px;">Code de session</label>
+    <input type="text" id="codeInput" maxlength="4" placeholder="0000">
+    <div id="codeError" class="error" style="text-align:center;">Le code fait 4 chiffres.</div>
+    <button class="primary" onclick="checkCode()">Rejoindre →</button>
+    <div class="step-counter">1 / 15</div>
+  </div>
+
+  <!-- 2. PSEUDO -->
+  <div id="s-pseudo" class="step">
+    <div class="eyebrow">Bienvenue</div>
+    <h1>Comment on t'appelle ?</h1>
+    <input type="text" id="pseudoInput" class="pseudo-input" placeholder="Ton prénom">
+    <button class="primary" id="pseudoBtn" onclick="show('s-avatar')" disabled>Continuer →</button>
+    <div class="step-counter">2 / 15</div>
+  </div>
+
+  <!-- 3. AVATAR -->
+  <div id="s-avatar" class="step">
+    <div class="eyebrow">Ton identité</div>
+    <h1>Choisis ton avatar</h1>
+    <div class="avatar-modes">
+      <button class="active" onclick="avatarMode('choix', this)">Choisir</button>
+      <button onclick="avatarMode('selfie', this)">Selfie</button>
+      <button onclick="avatarMode('upload', this)">Uploader</button>
+    </div>
+    <div class="avatar-grid">
+      <div class="avatar-option" onclick="selectAvatar(this,'🦊')">🦊</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🐼')">🐼</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🦁')">🦁</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🐸')">🐸</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🦄')">🦄</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🐙')">🐙</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🦉')">🦉</div>
+      <div class="avatar-option" onclick="selectAvatar(this,'🐺')">🐺</div>
+    </div>
+    <button class="primary" id="avatarBtn" onclick="goLobby()" disabled>Entrer dans la soirée →</button>
+    <div class="step-counter">3 / 15</div>
+  </div>
+
+  <!-- 4. LOBBY -->
+  <div id="s-lobby" class="step">
+    <div class="eyebrow">Connecté</div>
+    <div id="myAvatarDisplay"></div>
+    <div id="myNameDisplay"></div>
+    <div class="lobby-list">
+      <div class="count">3 personnes connectées</div>
+      <div class="lobby-player"><div class="dot">🎧</div> Sam</div>
+      <div class="lobby-player"><div class="dot">🍸</div> Lina</div>
+      <div class="lobby-player"><div class="dot">🕺</div> Yanis</div>
+    </div>
+    <button class="primary" style="margin-top:20px;" onclick="show('s-q1')">Le patron lance la partie →</button>
+    <div class="step-counter">4 / 15</div>
+  </div>
+
+  <!-- 5-7. QUESTIONNAIRE RÔLE -->
+  <div id="s-q1" class="step">
+    <div class="eyebrow">Question 1 / 5</div>
+    <div class="progress-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <h1>Ce soir, tu préfères plutôt...</h1>
+    <button class="option-btn" onclick="answerQ(1,'social')">Papoter avec tout le monde</button>
+    <button class="option-btn" onclick="answerQ(1,'danse')">Danser sans t'arrêter</button>
+    <button class="option-btn" onclick="answerQ(1,'discret')">Observer tranquillement</button>
+    <div class="step-counter">5 / 15</div>
+  </div>
+
+  <div id="s-q2" class="step">
+    <div class="eyebrow">Question 2 / 5</div>
+    <div class="progress-dots"><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <h1>Si on te tend un micro...</h1>
+    <button class="option-btn" onclick="answerQ(2,'a-aise')">Je fonce, ça me va bien</button>
+    <button class="option-btn" onclick="answerQ(2,'timide')">Je préfère rester en retrait</button>
+    <button class="option-btn" onclick="answerQ(2,'perf')">Je fais un show</button>
+    <div class="step-counter">6 / 17</div>
+  </div>
+
+  <div id="s-q3" class="step">
+    <div class="eyebrow">Question 3 / 5</div>
+    <div class="progress-dots"><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <h1>Musicalement, tu es plutôt...</h1>
+    <button class="option-btn" onclick="answerQ(3,'connaisseur')">Toujours au courant des sorties</button>
+    <button class="option-btn" onclick="answerQ(3,'ambiance')">Peu importe tant que ça groove</button>
+    <button class="option-btn" onclick="answerQ(3,'aucune-idee')">Je ne m'y connais pas trop</button>
+    <div class="step-counter">7 / 17</div>
+  </div>
+
+  <div id="s-q4" class="step">
+    <div class="eyebrow">Question 4 / 5</div>
+    <div class="progress-dots"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div></div>
+    <h1>Tu pourrais reconnaître le tempo d'un morceau les yeux fermés ?</h1>
+    <button class="option-btn" onclick="answerQ(4,'oui')">Oui</button>
+    <button class="option-btn" onclick="answerQ(4,'non')">Non</button>
+    <div class="step-counter">7b / 17</div>
+  </div>
+
+  <div id="s-q5" class="step">
+    <div class="eyebrow">Question 5 / 5</div>
+    <div class="progress-dots"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div></div>
+    <h1>Tu oses aller vers quelqu'un que tu ne connais pas ?</h1>
+    <button class="option-btn" onclick="answerQ(5,'oui')">Oui</button>
+    <button class="option-btn" onclick="answerQ(5,'non')">Non</button>
+    <div class="step-counter">7c / 17</div>
+  </div>
+
+  <!-- 8. CHOIX RÔLE -->
+  <div id="s-roleChoice" class="step">
+    <div class="eyebrow">D'après tes réponses</div>
+    <h1>Choisis ton rôle</h1>
+    <div id="roleOptions"></div>
+    <button class="primary" id="confirmRoleBtn" onclick="confirmRole()" disabled>Confirmer →</button>
+    <div class="step-counter">8 / 17</div>
+  </div>
+
+  <!-- 9. RÔLE CONFIRMÉ -->
+  <div id="s-roleConfirmed" class="step">
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-role" id="confirmRoleName"></div>
+    <div class="sub" id="confirmRoleSub">Ton rôle reste secret toute la soirée. Personne ne doit savoir.</div>
+    <button class="primary" onclick="show('s-statut')">Continuer →</button>
+    <div class="step-counter">9 / 15</div>
+  </div>
+
+  <!-- 10. STATUT CRUSH -->
+  <div id="s-statut" class="step">
+    <div class="eyebrow">Avant de commencer</div>
+    <h1>Ton état d'esprit ce soir ?</h1>
+    <div class="sub">Ça reste entre toi et le jeu.</div>
+    <button class="option-btn" onclick="goToPeople()">Je ne suis pas disponible</button>
+    <button class="option-btn" onclick="goToPeople()">Célibataire, ouvert·e aux rencontres</button>
+    <button class="option-btn" onclick="goToPeople()">J'aimerais approfondir quelqu'un que je connais déjà</button>
+    <div class="step-counter">10 / 15</div>
+  </div>
+
+  <!-- 11. CRUSH PAR PERSONNE -->
+  <div id="s-person" class="step">
+    <div class="eyebrow">Question privée</div>
+    <div class="privacy-note">🔒 Visible seulement par toi</div>
+    <div class="progress-dots cyan" id="progressDots"></div>
+    <div class="person-header">
+      <div class="person-avatar" id="pAvatar"></div>
+      <div class="person-name" id="pName"></div>
+    </div>
+    <div class="sub-question">
+      <div class="q-label">Tu la/le connais déjà ?</div>
+      <div class="yn-row">
+        <button class="yn-btn" data-q="connais" data-v="oui" onclick="selectYN(this)">Oui</button>
+        <button class="yn-btn" data-q="connais" data-v="non" onclick="selectYN(this)">Non</button>
+      </div>
+    </div>
+    <div class="sub-question">
+      <div class="q-label">Tu aimerais discuter avec elle/lui ?</div>
+      <div class="yn-row">
+        <button class="yn-btn" data-q="parler" data-v="oui" onclick="selectYN(this)">Oui</button>
+        <button class="yn-btn" data-q="parler" data-v="non" onclick="selectYN(this)">Non</button>
+      </div>
+    </div>
+    <div class="sub-question">
+      <div class="q-label">C'est ton crush ce soir ?</div>
+      <div class="yn-row">
+        <button class="yn-btn" data-q="crush" data-v="oui" onclick="selectYN(this)">Oui</button>
+        <button class="yn-btn" data-q="crush" data-v="non" onclick="selectYN(this)">Non</button>
+      </div>
+    </div>
+    <button class="primary" id="nextPersonBtn" onclick="nextPerson()" disabled>Suivant →</button>
+    <div class="step-counter">11 / 15</div>
+  </div>
+
+  <!-- 12. CRUSH FIN -->
+  <div id="s-crushDone" class="step">
+    <div class="done-icon">🔒</div>
+    <h1>C'est noté</h1>
+    <div class="sub">Tes réponses restent privées. Si un crush est réciproque, le jeu vous le fera savoir plus tard — au bon moment.</div>
+    <button class="primary" onclick="show('s-position')">Entrer dans la partie →</button>
+    <div class="step-counter">12 / 15</div>
+  </div>
+
+  <!-- 12b. TA POSITION -->
+  <div id="s-position" class="step">
+    <div class="eyebrow">La soirée commence</div>
+    <h1>Tu es ici</h1>
+    <div class="map-frame" id="mapFrame1">
+      <img id="mapImg1" src="plan-final.png" alt="Plateau AFTER OURS">
+      <div class="my-pin" style="left:50%; top:50%;"></div>
+    </div>
+    <div class="sub">Entrée — avance en réussissant des défis.</div>
+    <button class="primary" onclick="show('s-battleNotif')">Continuer →</button>
+    <div class="step-counter">12b / 15</div>
+  </div>
+
+  <!-- 13-15. LE BATTLE -->
+  <div id="s-battleNotif" class="step">
+    <div class="eyebrow">Le Battle</div>
+    <h1>À toi de jouer</h1>
+    <div class="map-frame small" id="mapFrame2">
+      <img id="mapImg2" src="plan-final.png" alt="Plateau AFTER OURS">
+      <div class="my-pin" style="left:50%; top:50%;"></div>
+    </div>
+    <div class="sub">Mets un morceau, ou profite de celui en cours pour danser.</div>
+    <div class="choice-row">
+      <button class="choice-btn" onclick="startMorceau()"><span class="emoji">🎵</span>Un morceau</button>
+      <button class="choice-btn" onclick="startDanse()"><span class="emoji">🕺</span>Je danse</button>
+    </div>
+    <div class="step-counter">13 / 15</div>
+  </div>
+
+  <div id="s-reflexion" class="step">
+    <div class="eyebrow">Réfléchis</div>
+    <div class="countdown" id="countdownDisplay">20</div>
+    <div class="countdown-label">secondes pour trouver ton morceau</div>
+  </div>
+
+  <div id="s-saisie" class="step">
+    <div class="eyebrow">Ton morceau</div>
+    <h1>Quel titre ?</h1>
+    <input type="text" id="titleInput" class="track-input" placeholder="Nom de l'artiste — titre">
+    <button class="primary" id="searchBtn" onclick="searchTrack()" disabled>Lancer la recherche →</button>
+  </div>
+
+  <div id="s-recherche" class="step">
+    <div class="eyebrow">Un instant</div>
+    <div class="spinner"></div>
+    <div class="sub">Recherche sur YouTube en cours…</div>
+  </div>
+
+  <div id="s-lecture" class="step">
+    <div class="eyebrow">En cours de lecture</div>
+    <div class="track-result">
+      <div class="track-thumb">▶</div>
+      <div><div class="track-title" id="foundTitle"></div><div class="track-sub">Lancé par toi</div></div>
+    </div>
+    <div class="locked-note">Les votes s'ouvrent après 1 minute d'écoute.</div>
+  </div>
+
+  <div id="s-danse" class="step">
+    <div class="eyebrow">C'est parti</div>
+    <div class="dance-icon">🕺</div>
+    <h1>Danse !</h1>
+    <div class="countdown" id="danceCountdown">60</div>
+    <div class="countdown-label">secondes, les autres notent ta prestation</div>
+  </div>
+
+  <div id="s-vote" class="step">
+    <div class="eyebrow">Vote</div>
+    <h1>T'aimes ce morceau ?</h1>
+    <div class="sub">Lancé par Sam.</div>
+    <div class="vote-row">
+      <button class="vote-btn" onclick="show('s-fin')">👎</button>
+      <button class="vote-btn" onclick="show('s-fin')">👍</button>
+    </div>
+  </div>
+
+  <div id="s-fin" class="step">
+    <div class="eyebrow">Fin du parcours de démo</div>
+    <h1>Bien joué 🎉</h1>
+    <div class="sub">Voilà le parcours complet, du code de session jusqu'à une manche du Battle.</div>
+    <button class="primary" onclick="location.reload()">Recommencer depuis le début</button>
+    <div class="step-counter">15 / 15</div>
+  </div>
+
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (id === 's-position') zoomMap('mapFrame1', 'mapImg1', 8.3, 37.2, 3.2);
+    if (id === 's-battleNotif') zoomMap('mapFrame2', 'mapImg2', 8.3, 37.2, 3.2);
+  }
+
+  // Zoome l'image du plan pour centrer le point (fx%, fy%) au milieu du cadre.
+  function zoomMap(frameId, imgId, fx, fy, zoom) {
+    const img = document.getElementById(imgId);
+    const fxr = fx / 100, fyr = fy / 100;
+    img.style.width = (zoom * 100) + '%';
+    img.style.height = (zoom * 100) + '%';
+    img.style.left = (50 - fxr * zoom * 100) + '%';
+    img.style.top = (50 - fyr * zoom * 100) + '%';
+  }
+
+  function finishSetup() {
+    // Dans la vraie version : ces associations sont envoyées au serveur pour toute la session.
+    show('s-code');
+  }
+
+  // --- Code / pseudo / avatar ---
+  function checkCode() {
+    const val = document.getElementById('codeInput').value.trim();
+    const err = document.getElementById('codeError');
+    if (val.length !== 4) { err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    show('s-pseudo');
+  }
+  document.getElementById('pseudoInput').addEventListener('input', function() {
+    document.getElementById('pseudoBtn').disabled = this.value.trim().length === 0;
+  });
+  function avatarMode(mode, btn) {
+    document.querySelectorAll('.avatar-modes button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (mode !== 'choix') {
+      alert("Dans la vraie version, ceci ouvrirait l'appareil photo ou la galerie.");
+      document.querySelector('.avatar-modes button').classList.add('active');
+      btn.classList.remove('active');
+    }
+  }
+  let selectedAvatar = null;
+  function selectAvatar(el, emoji) {
+    document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedAvatar = emoji;
+    document.getElementById('avatarBtn').disabled = false;
+  }
+  function goLobby() {
+    show('s-lobby');
+    document.getElementById('myAvatarDisplay').textContent = selectedAvatar;
+    document.getElementById('myNameDisplay').textContent = document.getElementById('pseudoInput').value;
+  }
+
+  // --- Questionnaire rôle ---
+  const roles = {
+    barman: { icon: '🍸', name: 'Barman', desc: "Sers des verres, gagne la confiance de tout le monde.", locked: false,
+      criteria: [{q:1,v:'social'},{q:2,v:'a-aise'},{q:5,v:'oui'}] },
+    videur: { icon: '🛡️', name: 'Videur', desc: "Garde un œil sur ce qui se trame ce soir.", locked: false,
+      criteria: [{q:1,v:'discret'},{q:2,v:'timide'},{q:5,v:'non'}] },
+    danseur: { icon: '🕺', name: 'Danseur·se', desc: "La piste, c'est ton terrain.", locked: false,
+      criteria: [{q:1,v:'danse'},{q:2,v:'perf'}] },
+    cliente: { icon: '🎉', name: 'Client·e', desc: "Vis la soirée, discrètement en mission.", locked: false,
+      criteria: [{q:1,v:'discret'},{q:2,v:'timide'}] },
+    dealer: { icon: '🌀', name: 'Dealer', desc: "Reste dans l'ombre. Ne dis rien.", locked: false,
+      criteria: [{q:1,v:'discret'},{q:2,v:'timide'},{q:5,v:'non'}] },
+    dj: { icon: '🎧', name: 'DJ', desc: "Tu sens toujours quel morceau va faire lever la salle.", locked: false, public: true,
+      criteria: [{q:3,v:'connaisseur'},{q:4,v:'oui'}] },
+    patron: { icon: '👑', name: 'Patron·ne', desc: "Le maître des lieux. Débloqué à partir de la session 2.", locked: true },
+    flic: { icon: '🕵️', name: 'Flic en civil', desc: "Observe sans se faire remarquer. Débloqué à partir de la session 2.", locked: true }
+  };
+  const answers = {};
+  function answerQ(q, val) {
+    answers[q] = val;
+    if (q < 5) { show('s-q' + (q+1)); }
+    else { showRoleChoice(); }
+  }
+  function computeStars(role) {
+    if (!role.criteria || role.criteria.length === 0) return 0;
+    const matches = role.criteria.filter(c => answers[c.q] === c.v).length;
+    const ratio = matches / role.criteria.length;
+    return Math.max(1, Math.round(ratio * 5));
+  }
+  function starString(n) {
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
+  }
+  function showRoleChoice() {
+    const container = document.getElementById('roleOptions');
+    container.innerHTML = '';
+    const unlocked = Object.keys(roles).filter(k => !roles[k].locked);
+    const locked = Object.keys(roles).filter(k => roles[k].locked);
+    unlocked.sort((a, b) => computeStars(roles[b]) - computeStars(roles[a]));
+    const orderedKeys = [...unlocked, ...locked];
+    orderedKeys.forEach(key => {
+      const r = roles[key];
+      const div = document.createElement('div');
+      div.className = 'role-card' + (r.locked ? ' locked' : '');
+      if (!r.locked) {
+        div.onclick = () => selectRole(div, key);
+        const stars = computeStars(r);
+        div.innerHTML = `<div class="role-icon">${r.icon}</div><div class="role-name">${r.name}</div><div class="role-desc">${r.desc}</div><div class="role-stars">${starString(stars)}</div>`;
+      } else {
+        div.innerHTML = `<div class="role-icon">${r.icon}</div><div class="role-name">${r.name}</div><div class="role-desc">${r.desc}</div><div class="lock-note">🔒 Finis une session pour débloquer ce personnage</div>`;
+      }
+      container.appendChild(div);
+    });
+    show('s-roleChoice');
+  }
+  let chosenRole = null;
+  function selectRole(el, key) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    chosenRole = key;
+    document.getElementById('confirmRoleBtn').disabled = false;
+  }
+  function confirmRole() {
+    show('s-roleConfirmed');
+    const r = roles[chosenRole];
+    document.getElementById('confirmIcon').textContent = r.icon;
+    document.getElementById('confirmRoleName').textContent = r.name;
+    document.getElementById('confirmRoleSub').textContent = r.public
+      ? "Ce rôle est public : tout le monde peut savoir que tu es le DJ."
+      : "Ton rôle reste secret toute la soirée. Personne ne doit savoir.";
+  }
+
+  // --- Crush & Connexions ---
+  const people = [{ name: 'Sam', avatar: '🎧' }, { name: 'Lina', avatar: '🍸' }, { name: 'Yanis', avatar: '🕺' }];
+  let pIdx = 0;
+  const currentAnswers = {};
+  function goToPeople() { show('s-person'); renderPerson(); }
+  function renderPerson() {
+    const p = people[pIdx];
+    document.getElementById('pAvatar').textContent = p.avatar;
+    document.getElementById('pName').textContent = p.name;
+    document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('nextPersonBtn').disabled = true;
+    document.getElementById('nextPersonBtn').textContent = pIdx === people.length - 1 ? 'Terminer →' : 'Suivant →';
+    const dots = document.getElementById('progressDots');
+    dots.innerHTML = '';
+    people.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i < pIdx ? ' done' : '');
+      dots.appendChild(d);
+    });
+  }
+  function selectYN(btn) {
+    const q = btn.dataset.q;
+    document.querySelectorAll(`.yn-btn[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentAnswers[q] = btn.dataset.v;
+    if (currentAnswers.connais && currentAnswers.parler && currentAnswers.crush) {
+      document.getElementById('nextPersonBtn').disabled = false;
+    }
+  }
+  function nextPerson() {
+    Object.keys(currentAnswers).forEach(k => delete currentAnswers[k]);
+    pIdx++;
+    if (pIdx < people.length) { renderPerson(); }
+    else { show('s-crushDone'); }
+  }
+
+  // --- Le Battle ---
+  function startMorceau() {
+    show('s-reflexion');
+    let t = 20;
+    document.getElementById('countdownDisplay').textContent = t;
+    const interval = setInterval(() => {
+      t -= 1;
+      document.getElementById('countdownDisplay').textContent = t;
+      if (t <= 0) { clearInterval(interval); show('s-saisie'); }
+    }, 1000);
+  }
+  document.getElementById('titleInput').addEventListener('input', function() {
+    document.getElementById('searchBtn').disabled = this.value.trim().length === 0;
+  });
+  function searchTrack() {
+    show('s-recherche');
+    setTimeout(() => {
+      document.getElementById('foundTitle').textContent = document.getElementById('titleInput').value;
+      show('s-lecture');
+      setTimeout(() => show('s-vote'), 2200);
+    }, 1600);
+  }
+  function startDanse() {
+    show('s-danse');
+    let t = 60;
+    document.getElementById('danceCountdown').textContent = t;
+    const interval = setInterval(() => {
+      t -= 2;
+      document.getElementById('danceCountdown').textContent = Math.max(t,0);
+      if (t <= 0) { clearInterval(interval); show('s-fin'); }
+    }, 400);
+  }
+</script>
+
+</body>
+</html>
